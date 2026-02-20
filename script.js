@@ -268,17 +268,12 @@ function showQuestion() {
         inputMode.style.display = 'block';
         alternativesMode.style.display = 'none';
         
-        // Limpar e preparar input
-        answerInput.value = '';
+        // Não limpar o valor - apenas selecionar tudo para facilitar substituição
         answerInput.disabled = false;
         submitBtn.disabled = false;
         
-        // Forçar foco imediatamente e com múltiplas tentativas para iOS
-        answerInput.focus();
-        requestAnimationFrame(() => {
-            answerInput.focus();
-            answerInput.click();
-        });
+        // Selecionar todo o texto (facilita digitação da próxima resposta)
+        answerInput.select();
     }
 }
 
@@ -449,19 +444,16 @@ function submitAnswer() {
         feedbackMessage.textContent = '✅ Correto!';
         feedbackMessage.className = 'feedback-message success';
         
-        // Limpar campo mas manter foco
-        answerInput.value = '';
+        // Avançar imediatamente sem delay
+        gameState.currentQuestionIndex++;
         
-        // Avançar para próxima pergunta após breve delay
-        setTimeout(() => {
-            gameState.currentQuestionIndex++;
-            
-            if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
-                showQuestion();
-            } else {
-                endGame();
-            }
-        }, 500);
+        if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
+            // Selecionar todo o texto para facilitar substituição
+            answerInput.select();
+            showQuestion();
+        } else {
+            endGame();
+        }
         
     } else {
         // Resposta incorreta
@@ -478,30 +470,24 @@ function submitAnswer() {
             feedbackMessage.textContent = '❌ Resposta incorreta! Tente novamente.';
             feedbackMessage.className = 'feedback-message error';
             
-            // Limpar campo de resposta e reabilitar
-            answerInput.value = '';
+            // Selecionar todo o texto para facilitar substituição
+            answerInput.select();
             submitBtn.disabled = false;
-            
-            // Manter foco
-            answerInput.focus();
             
         } else {
             // Modo desafio: mostrar erro e avançar
             feedbackMessage.textContent = '❌ Resposta incorreta!';
             feedbackMessage.className = 'feedback-message error';
             
-            // Limpar campo mas manter foco
-            answerInput.value = '';
+            // Avançar imediatamente
+            gameState.currentQuestionIndex++;
             
-            setTimeout(() => {
-                gameState.currentQuestionIndex++;
-                
-                if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
-                    showQuestion();
-                } else {
-                    endGame();
-                }
-            }, 1000);
+            if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
+                answerInput.select();
+                showQuestion();
+            } else {
+                endGame();
+            }
         }
     }
 }
