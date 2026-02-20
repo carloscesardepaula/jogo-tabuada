@@ -270,8 +270,12 @@ function showQuestion() {
         
         answerInput.value = '';
         answerInput.disabled = false;
-        answerInput.focus();
         submitBtn.disabled = false;
+        
+        // Garantir foco no campo com delay para iOS
+        setTimeout(() => {
+            answerInput.focus();
+        }, 100);
     }
 }
 
@@ -449,9 +453,6 @@ function submitAnswer() {
             
             if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
                 showQuestion();
-                // Reabilitar controles
-                submitBtn.disabled = false;
-                answerInput.disabled = false;
             } else {
                 endGame();
             }
@@ -476,7 +477,11 @@ function submitAnswer() {
             answerInput.value = '';
             answerInput.disabled = false;
             submitBtn.disabled = false;
-            answerInput.focus();
+            
+            // Manter foco no campo
+            setTimeout(() => {
+                answerInput.focus();
+            }, 100);
             
             // Não incrementa currentQuestionIndex - pergunta repete
         } else {
@@ -489,9 +494,6 @@ function submitAnswer() {
                 
                 if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
                     showQuestion();
-                    // Reabilitar controles
-                    submitBtn.disabled = false;
-                    answerInput.disabled = false;
                 } else {
                     endGame();
                 }
