@@ -472,6 +472,83 @@ h2 {
     margin-bottom: 20px;
 }
 
+.ai-analysis {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    color: white;
+}
+
+.ai-analysis h3 {
+    color: white;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+}
+
+.ai-analysis-content {
+    background: white;
+    color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    line-height: 1.6;
+    font-size: 1.05em;
+}
+
+.ai-analysis-content .loading {
+    text-align: center;
+    color: #667eea;
+    font-style: italic;
+}
+
+.ai-analysis-content p {
+    margin-bottom: 10px;
+}
+
+.ai-analysis-content strong {
+    color: #667eea;
+}
+
+.ai-formatted-text {
+    line-height: 1.8;
+}
+
+.ai-formatted-text h2,
+.ai-formatted-text h3,
+.ai-formatted-text h4 {
+    color: #667eea;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+.ai-formatted-text ul,
+.ai-formatted-text ol {
+    margin: 10px 0;
+    padding-left: 25px;
+}
+
+.ai-formatted-text li {
+    margin: 5px 0;
+}
+
+.ai-formatted-text p {
+    margin: 10px 0;
+}
+
+.ai-formatted-text em {
+    font-style: italic;
+    color: #555;
+}
+
+.ai-formatted-text strong {
+    font-weight: bold;
+    color: #667eea;
+}
+
+.wrong-answers {
+    margin-bottom: 20px;
+}
+
 .wrong-answers h3 {
     color: #333;
     margin-bottom: 15px;

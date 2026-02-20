@@ -7,13 +7,36 @@ const gameConfig = {
     multipleChoice: false
 };
 
+/*
+ * CONFIGURAÇÃO DE IA GRATUITA:
+ * 
+ * Para ativar a análise por IA, você tem 2 opções GRATUITAS:
+ * 
+ * 1. GOOGLE GEMINI (RECOMENDADO - Melhor qualidade)
+ *    - Acesse: https://makersuite.google.com/app/apikey
+ *    - Crie uma conta Google (gratuita)
+ *    - Gere uma API Key
+ *    - Cole a chave na função generateGeminiAnalysis (linha ~580)
+ *    - Mude useAI = true na função generateAIAnalysis (linha ~550)
+ *    - Limite: 60 requisições/minuto (mais que suficiente)
+ * 
+ * 2. HUGGING FACE (Alternativa)
+ *    - Acesse: https://huggingface.co/settings/tokens
+ *    - Crie uma conta (gratuita)
+ *    - Gere um token de acesso
+ *    - Use a função generateHuggingFaceAnalysis
+ * 
+ * Se não configurar nenhuma IA, o sistema usa análise baseada em regras (já funciona bem!)
+ */
+
 const gameState = {
     startTime: null,
     endTime: null,
     currentQuestionIndex: 0,
     questions: [],
     answers: [],
-    totalErrors: 0
+    totalErrors: 0,
+    questionStartTime: null
 };
 
 // Elementos DOM
@@ -241,6 +264,9 @@ function showQuestion() {
         return;
     }
     
+    // Marcar tempo de início da pergunta
+    gameState.questionStartTime = Date.now();
+    
     // Atualizar interface
     document.getElementById('question').textContent = question.questionText;
     document.getElementById('current-q').textContent = gameState.currentQuestionIndex + 1;
@@ -365,11 +391,13 @@ function selectAlternative(selectedAnswer, correctAnswer) {
 
 function processAnswer(userAnswer, isCorrect) {
     const question = gameState.questions[gameState.currentQuestionIndex];
+    const responseTime = Date.now() - gameState.questionStartTime;
     
     if (isCorrect) {
         // Resposta correta
         question.userAnswer = userAnswer;
         question.isCorrect = true;
+        question.responseTime = responseTime;
         gameState.answers.push({...question});
         
         feedbackMessage.textContent = '✅ Correto!';
@@ -393,6 +421,7 @@ function processAnswer(userAnswer, isCorrect) {
         const errorRecord = {...question};
         errorRecord.userAnswer = userAnswer;
         errorRecord.isCorrect = false;
+        errorRecord.responseTime = responseTime;
         gameState.answers.push(errorRecord);
         
         if (gameConfig.repeatOnError) {
@@ -434,11 +463,13 @@ function submitAnswer() {
     
     const question = gameState.questions[gameState.currentQuestionIndex];
     const isCorrect = userAnswer === question.correctAnswer;
+    const responseTime = Date.now() - gameState.questionStartTime;
     
     if (isCorrect) {
         // Resposta correta
         question.userAnswer = userAnswer;
         question.isCorrect = true;
+        question.responseTime = responseTime;
         gameState.answers.push({...question});
         
         // Feedback visual de sucesso
@@ -464,6 +495,7 @@ function submitAnswer() {
         const errorRecord = {...question};
         errorRecord.userAnswer = userAnswer;
         errorRecord.isCorrect = false;
+        errorRecord.responseTime = responseTime;
         gameState.answers.push(errorRecord);
         
         if (gameConfig.repeatOnError) {
@@ -530,6 +562,15 @@ function showResults() {
     document.getElementById('wrong-count').textContent = wrongAnswers;
     document.getElementById('final-score').textContent = score;
     
+    // Resetar e mostrar mensagem de carregamento da análise
+    const analysisContent = document.getElementById('ai-analysis-content');
+    analysisContent.innerHTML = '<div class="loading">🤔 Analisando seu desempenho...</div>';
+    
+    // Gerar análise por IA (com pequeno delay para mostrar a mensagem)
+    setTimeout(() => {
+        generateAIAnalysis();
+    }, 500);
+    
     // Mostrar respostas erradas
     const wrongAnswersDiv = document.getElementById('wrong-answers');
     wrongAnswersDiv.innerHTML = '';
@@ -552,6 +593,301 @@ function showResults() {
             wrongAnswersDiv.appendChild(item);
         });
     }
+}
+
+async function generateAIAnalysis() {
+    const analysisContent = document.getElementById('ai-analysis-content');
+    
+    try {
+        // Preparar dados para análise
+        const analysisData = prepareAnalysisData();
+        
+        // Tentar usar IA gratuita (Google Gemini)
+        const useAI = true; // Mude para true quando tiver a chave API
+        
+        if (useAI) {
+            await generateGeminiAnalysis(analysisData, analysisContent);
+        } else {
+            // Análise baseada em regras (sem necessidade de API)
+            const analysis = generateRuleBasedAnalysis(analysisData);
+            analysisContent.innerHTML = analysis;
+        }
+        
+    } catch (error) {
+        console.error('Erro ao gerar análise:', error);
+        // Fallback para análise baseada em regras
+        const analysisData = prepareAnalysisData();
+        const analysis = generateRuleBasedAnalysis(analysisData);
+        analysisContent.innerHTML = analysis;
+    }
+}
+
+// Integração com Google Gemini (GRATUITO - 15 requisições/minuto)
+async function generateGeminiAnalysis(data, contentElement) {
+    const API_KEY = 'AIzaSyDDtDho9N46RHCVXb3M05gcLaXLdEEwbb0';
+    
+    const prompt = `Você é um professor de matemática especializado em ensino fundamental para crianças de 8 a 11 anos.
+
+Analise o desempenho do aluno no jogo de tabuada e forneça uma análise pedagógica amigável e motivadora.
+
+Dados do desempenho:
+- Total de perguntas: ${data.totalQuestions}
+- Acertos: ${data.correctAnswers}
+- Erros: ${data.errors}
+- Pontuação: ${data.score}%
+- Tempo médio de resposta: ${(data.avgTime / 1000).toFixed(1)} segundos
+- Operações praticadas: ${data.operations.join(', ')}
+- Tabuadas praticadas: ${data.tables.join(', ')}
+- Erros por operação: ${JSON.stringify(data.errorsByOperation)}
+- Erros por tabuada: ${JSON.stringify(data.errorsByTable)}
+
+Forneça uma análise em português com:
+1. Elogio inicial (seja encorajador)
+2. Pontos fortes identificados
+3. Áreas que precisam de mais prática (seja específico sobre quais tabuadas ou operações)
+4. 3 recomendações práticas e simples
+5. Mensagem motivadora final
+
+Use uma linguagem amigável e adequada para crianças. Seja breve (máximo 200 palavras).`;
+
+    try {
+        // URL correta da API Gemini com modelo gemini-pro
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Erro da API:', response.status, errorText);
+            throw new Error(`Erro na API do Gemini: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (!result.candidates || !result.candidates[0]) {
+            throw new Error('Resposta inválida da API');
+        }
+        
+        const aiText = result.candidates[0].content.parts[0].text;
+        
+        // Converter Markdown para HTML e exibir
+        contentElement.innerHTML = convertMarkdownToHTML(aiText);
+        
+    } catch (error) {
+        console.error('Erro ao chamar Gemini:', error);
+        throw error;
+    }
+}
+
+// Função para converter Markdown básico para HTML
+function convertMarkdownToHTML(text) {
+    let html = text;
+    
+    // Negrito: **texto** ou __texto__
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__(.+?)__/g, '<strong>$1</strong>');
+    
+    // Itálico: *texto* ou _texto_
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    html = html.replace(/_(.+?)_/g, '<em>$1</em>');
+    
+    // Títulos: ## Título
+    html = html.replace(/^### (.+)$/gm, '<h4>$1</h4>');
+    html = html.replace(/^## (.+)$/gm, '<h3>$1</h3>');
+    html = html.replace(/^# (.+)$/gm, '<h2>$1</h2>');
+    
+    // Listas não ordenadas: - item ou * item
+    html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+    
+    // Listas ordenadas: 1. item
+    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+    
+    // Quebras de linha duplas = parágrafos
+    html = html.split('\n\n').map(para => {
+        if (!para.trim().startsWith('<') && para.trim() !== '') {
+            return `<p>${para.trim()}</p>`;
+        }
+        return para;
+    }).join('\n');
+    
+    // Quebras de linha simples
+    html = html.replace(/\n/g, '<br>');
+    
+    return `<div class="ai-formatted-text">${html}</div>`;
+}
+
+// Integração alternativa com Hugging Face (GRATUITO)
+async function generateHuggingFaceAnalysis(data, contentElement) {
+    const API_KEY = 'SUA_CHAVE_HF_AQUI'; // Obtenha em: https://huggingface.co/settings/tokens
+    
+    const prompt = `Analise este desempenho de matemática de uma criança:
+Acertos: ${data.correctAnswers}/${data.totalQuestions}
+Erros: ${data.errors}
+Operações com dificuldade: ${Object.keys(data.errorsByOperation).join(', ')}
+Tabuadas com dificuldade: ${Object.keys(data.errorsByTable).join(', ')}
+
+Forneça uma análise pedagógica breve e motivadora em português.`;
+
+    try {
+        const response = await fetch('https://api-inference.huggingface.co/models/google/flan-t5-large', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                inputs: prompt,
+                parameters: {
+                    max_length: 300,
+                    temperature: 0.7
+                }
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Erro na API do Hugging Face');
+        }
+
+        const result = await response.json();
+        contentElement.innerHTML = `<div>${result[0].generated_text}</div>`;
+        
+    } catch (error) {
+        console.error('Erro ao chamar Hugging Face:', error);
+        throw error;
+    }
+}
+
+function prepareAnalysisData() {
+    const errors = gameState.answers.filter(a => !a.isCorrect);
+    const correct = gameState.answers.filter(a => a.isCorrect);
+    
+    // Análise por operação
+    const errorsByOperation = {};
+    const timeByOperation = {};
+    
+    errors.forEach(e => {
+        errorsByOperation[e.operation] = (errorsByOperation[e.operation] || 0) + 1;
+    });
+    
+    gameState.answers.forEach(a => {
+        if (!timeByOperation[a.operation]) {
+            timeByOperation[a.operation] = [];
+        }
+        timeByOperation[a.operation].push(a.responseTime);
+    });
+    
+    // Análise por tabuada
+    const errorsByTable = {};
+    errors.forEach(e => {
+        errorsByTable[e.operand1] = (errorsByTable[e.operand1] || 0) + 1;
+    });
+    
+    // Tempo médio de resposta
+    const avgTime = gameState.answers.reduce((sum, a) => sum + a.responseTime, 0) / gameState.answers.length;
+    
+    return {
+        totalQuestions: gameConfig.totalQuestions,
+        correctAnswers: correct.length,
+        errors: errors.length,
+        score: Math.round((gameConfig.totalQuestions / gameState.answers.length) * 100),
+        errorsByOperation,
+        errorsByTable,
+        timeByOperation,
+        avgTime,
+        operations: gameConfig.operations,
+        tables: gameConfig.selectedTables,
+        allAnswers: gameState.answers.map(a => ({
+            question: a.questionText,
+            userAnswer: a.userAnswer,
+            correctAnswer: a.correctAnswer,
+            isCorrect: a.isCorrect,
+            operation: a.operation,
+            operand1: a.operand1,
+            operand2: a.operand2,
+            time: a.responseTime
+        }))
+    };
+}
+
+function generateRuleBasedAnalysis(data) {
+    let analysis = '<div>';
+    
+    // Análise geral
+    if (data.errors === 0) {
+        analysis += '<p><strong>🎉 Excelente!</strong> Você acertou todas as perguntas! Continue praticando para manter esse desempenho.</p>';
+    } else if (data.score >= 80) {
+        analysis += '<p><strong>👏 Muito bom!</strong> Você teve um ótimo desempenho, mas ainda há espaço para melhorar.</p>';
+    } else if (data.score >= 60) {
+        analysis += '<p><strong>📚 Bom trabalho!</strong> Você está no caminho certo, mas precisa praticar mais algumas áreas.</p>';
+    } else {
+        analysis += '<p><strong>💪 Continue tentando!</strong> A prática leva à perfeição. Vamos identificar onde você pode melhorar.</p>';
+    }
+    
+    // Análise por operação
+    if (Object.keys(data.errorsByOperation).length > 0) {
+        analysis += '<p><strong>Operações que precisam de mais atenção:</strong></p><ul>';
+        const opNames = {
+            'soma': 'Soma',
+            'subtracao': 'Subtração',
+            'multiplicacao': 'Multiplicação',
+            'divisao': 'Divisão'
+        };
+        
+        for (const [op, count] of Object.entries(data.errorsByOperation)) {
+            analysis += `<li>${opNames[op]}: ${count} erro(s)</li>`;
+        }
+        analysis += '</ul>';
+    }
+    
+    // Análise por tabuada
+    if (Object.keys(data.errorsByTable).length > 0) {
+        analysis += '<p><strong>Tabuadas que precisam de mais prática:</strong></p><ul>';
+        const sortedTables = Object.entries(data.errorsByTable).sort((a, b) => b[1] - a[1]);
+        
+        sortedTables.slice(0, 3).forEach(([table, count]) => {
+            analysis += `<li>Tabuada do ${table}: ${count} erro(s)</li>`;
+        });
+        analysis += '</ul>';
+    }
+    
+    // Análise de tempo
+    const avgTimeSec = (data.avgTime / 1000).toFixed(1);
+    if (data.avgTime < 3000) {
+        analysis += `<p><strong>⚡ Velocidade:</strong> Você está respondendo muito rápido (média de ${avgTimeSec}s)! Ótima agilidade mental.</p>`;
+    } else if (data.avgTime < 8000) {
+        analysis += `<p><strong>⏱️ Velocidade:</strong> Seu tempo de resposta está bom (média de ${avgTimeSec}s). Continue praticando para ganhar mais agilidade.</p>`;
+    } else {
+        analysis += `<p><strong>🐢 Velocidade:</strong> Você está levando um tempo para responder (média de ${avgTimeSec}s). Tente praticar mais para ganhar confiança e velocidade.</p>`;
+    }
+    
+    // Recomendações
+    analysis += '<p><strong>💡 Recomendações:</strong></p><ul>';
+    
+    if (data.errors > 0) {
+        analysis += '<li>Revise as tabuadas onde você teve mais erros</li>';
+        analysis += '<li>Pratique diariamente por 10-15 minutos</li>';
+    }
+    
+    if (data.avgTime > 8000) {
+        analysis += '<li>Tente memorizar as respostas mais comuns</li>';
+        analysis += '<li>Use técnicas de cálculo mental</li>';
+    }
+    
+    analysis += '<li>Continue jogando para melhorar seu desempenho!</li>';
+    analysis += '</ul></div>';
+    
+    return analysis;
 }
 
 function showGameConfig() {
@@ -607,6 +943,7 @@ function resetGame() {
     gameState.startTime = null;
     gameState.endTime = null;
     gameState.totalErrors = 0;
+    gameState.questionStartTime = null;
     
     // Voltar para tela inicial
     resultScreen.classList.remove('active');
