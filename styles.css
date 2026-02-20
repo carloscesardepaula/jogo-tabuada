@@ -154,6 +154,45 @@ h2 {
     background: #ffecb3;
 }
 
+.ai-option {
+    background: #e8f5e9;
+    border: 2px solid #4caf50;
+}
+
+.ai-option:hover {
+    background: #c8e6c9;
+}
+
+.api-key-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.api-key-input:focus {
+    outline: none;
+    border-color: #2e7d32;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+.clear-key-btn {
+    padding: 8px 15px;
+    font-size: 0.9em;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.clear-key-btn:hover {
+    background: #cc0000;
+}
+
 .advanced-toggle {
     text-align: center;
     margin-bottom: 20px;

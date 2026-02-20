@@ -24,14 +24,14 @@
     <meta name="apple-mobile-web-app-title" content="Tabuada">
     <meta name="theme-color" content="#667eea">
     
-    <link rel="stylesheet" href="styles.css?v=1.4.1">
+    <link rel="stylesheet" href="styles.css?v=1.5.1">
 </head>
 <body>
     <!-- Tela Inicial -->
     <div id="config-screen" class="screen active">
         <div class="container">
             <h1>🎮 Jogo de Tabuada</h1>
-            <div class="version">v1.4.1</div>
+            <div class="version">v1.5.1</div>
             
             <div class="config-section">
                 <h2>Escolha as operações:</h2>
@@ -127,6 +127,26 @@
                     <input type="checkbox" id="multiple-choice">
                     <span>Ativar modo múltipla escolha</span>
                 </label>
+                
+                <h2 style="margin-top: 20px;">🤖 Análise por IA</h2>
+                <label class="checkbox-label ai-option">
+                    <input type="checkbox" id="enable-ai" checked>
+                    <span>Ativar análise por IA (Google Gemini)</span>
+                </label>
+                <div id="api-key-container" style="display: block; margin-top: 10px;">
+                    <input type="password" id="api-key-input" class="api-key-input" placeholder="Cole sua chave API do Google Gemini">
+                    <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 0.9em;">
+                            <input type="checkbox" id="remember-key" checked>
+                            <span>Lembrar minha chave neste navegador</span>
+                        </label>
+                        <button id="clear-key-btn" class="clear-key-btn" style="display: none;">🗑️ Limpar chave salva</button>
+                    </div>
+                    <small id="key-status" style="display: block; margin-top: 5px; color: #4caf50;"></small>
+                    <small style="display: block; margin-top: 5px; color: #666;">
+                        <a href="https://aistudio.google.com/app/apikey" target="_blank">Obter chave API gratuita</a>
+                    </small>
+                </div>
             </div>
 
             <div id="validation-message" class="validation-message"></div>
@@ -294,6 +314,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=1.4.1"></script>
+    <script src="script.js?v=1.5.1"></script>
 </body>
 </html>

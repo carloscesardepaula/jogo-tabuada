@@ -63,6 +63,12 @@ const studyTableContainer = document.getElementById('study-table-container');
 const studyTableTitle = document.getElementById('study-table-title');
 const studyTableContent = document.getElementById('study-table-content');
 
+// Elementos de gerenciamento da chave API
+const apiKeyInput = document.getElementById('api-key-input');
+const rememberKeyCheckbox = document.getElementById('remember-key');
+const clearKeyBtn = document.getElementById('clear-key-btn');
+const keyStatus = document.getElementById('key-status');
+
 // Configuração inicial
 document.querySelectorAll('#op-soma, #op-subtracao, #op-multiplicacao, #op-divisao').forEach(checkbox => {
     checkbox.addEventListener('change', validateConfig);
@@ -72,6 +78,9 @@ document.querySelectorAll('.table-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', validateConfig);
 });
 
+// Carregar chave API salva ao iniciar
+loadSavedApiKey();
+
 // Capturar mudança na opção de repetição
 document.getElementById('repeat-on-error').addEventListener('change', function() {
     gameConfig.repeatOnError = this.checked;
@@ -80,6 +89,41 @@ document.getElementById('repeat-on-error').addEventListener('change', function()
 // Capturar mudança no modo múltipla escolha
 document.getElementById('multiple-choice').addEventListener('change', function() {
     gameConfig.multipleChoice = this.checked;
+});
+
+// Capturar mudança na ativação da IA
+document.getElementById('enable-ai').addEventListener('change', function() {
+    const apiKeyContainer = document.getElementById('api-key-container');
+    if (this.checked) {
+        apiKeyContainer.style.display = 'block';
+    } else {
+        apiKeyContainer.style.display = 'none';
+    }
+});
+
+// Salvar chave API quando o usuário digitar
+apiKeyInput.addEventListener('input', function() {
+    if (rememberKeyCheckbox.checked && this.value.trim()) {
+        saveApiKey(this.value.trim());
+    }
+});
+
+// Atualizar status quando marcar/desmarcar "lembrar"
+rememberKeyCheckbox.addEventListener('change', function() {
+    if (this.checked && apiKeyInput.value.trim()) {
+        saveApiKey(apiKeyInput.value.trim());
+    } else if (!this.checked) {
+        clearSavedApiKey();
+    }
+});
+
+// Limpar chave salva
+clearKeyBtn.addEventListener('click', function() {
+    if (confirm('Tem certeza que deseja remover a chave API salva?')) {
+        clearSavedApiKey();
+        apiKeyInput.value = '';
+        updateKeyStatus();
+    }
 });
 
 // Toggle de configurações avançadas
@@ -618,11 +662,12 @@ async function generateAIAnalysis() {
         // Preparar dados para análise
         const analysisData = prepareAnalysisData();
         
-        // Tentar usar IA gratuita (Google Gemini)
-        const useAI = true; // Mude para true quando tiver a chave API
+        // Verificar se o usuário ativou a IA e forneceu a chave
+        const enableAI = document.getElementById('enable-ai').checked;
+        const apiKey = document.getElementById('api-key-input').value.trim();
         
-        if (useAI) {
-            await generateGeminiAnalysis(analysisData, analysisContent);
+        if (enableAI && apiKey) {
+            await generateGeminiAnalysis(analysisData, analysisContent, apiKey);
         } else {
             // Análise baseada em regras (sem necessidade de API)
             const analysis = generateRuleBasedAnalysis(analysisData);
@@ -639,8 +684,8 @@ async function generateAIAnalysis() {
 }
 
 // Integração com Google Gemini (GRATUITO - 15 requisições/minuto)
-async function generateGeminiAnalysis(data, contentElement) {
-    const API_KEY = 'AIzaSyDDtDho9N46RHCVXb3M05gcLaXLdEEwbb0';
+async function generateGeminiAnalysis(data, contentElement, apiKey) {
+    const API_KEY = apiKey; // Usa a chave fornecida pelo usuário
     
     const prompt = `Você é um professor de matemática especializado em ensino fundamental para crianças de 8 a 11 anos.
 
@@ -648,7 +693,7 @@ Analise o desempenho do aluno no jogo de tabuada e forneça uma análise pedagó
 
 Dados do desempenho:
 - Total de perguntas: ${data.totalQuestions}
-- Acertos: ${data.correctAnswers}
+- Acertos: ${data.correctAnswers - data.errors}
 - Erros: ${data.errors}
 - Pontuação: ${data.score}%
 - Tempo médio de resposta: ${(data.avgTime / 1000).toFixed(1)} segundos
@@ -657,14 +702,30 @@ Dados do desempenho:
 - Erros por operação: ${JSON.stringify(data.errorsByOperation)}
 - Erros por tabuada: ${JSON.stringify(data.errorsByTable)}
 
-Forneça uma análise em português com:
-1. Elogio inicial (seja encorajador)
-2. Pontos fortes identificados
-3. Áreas que precisam de mais prática (seja específico sobre quais tabuadas ou operações)
-4. 3 recomendações práticas e simples
-5. Mensagem motivadora final
+Classifique o aluno em um dos 5 níveis abaixo, com base principalmente na pontuação, número de erros e tempo médio:
 
-Use uma linguagem amigável e adequada para crianças. Seja breve (máximo 200 palavras).`;
+- EXCELENTE
+- MUITO BOM
+- BOM
+- PRECISA PRATICAR MAIS
+- PRECISA DE MAIS ATENÇÃO
+
+Comece a resposta exatamente com:
+"NÍVEL: <nome do nível>"
+
+Depois escreva um feedback curto (máximo 100 palavras) contendo:
+
+1) Um elogio ou incentivo inicial
+2) Pontos fortes
+3) Onde pode melhorar (se houver erro)
+4) 3 dicas simples e práticas
+5) Uma frase motivadora final
+
+Use linguagem simples, amigável e adequada para crianças.
+Evite termos técnicos.
+Se o nível for baixo, seja encorajador e nunca crítico.`;
+
+console.log('Prompt:', prompt);
 
     try {
         // URL correta da API Gemini com modelo gemini-pro
@@ -1050,4 +1111,53 @@ function playFromStudy() {
     
     // Iniciar o jogo diretamente
     startGame();
+}
+
+// ===== FUNÇÕES DE GERENCIAMENTO DA CHAVE API =====
+
+function loadSavedApiKey() {
+    try {
+        const savedKey = localStorage.getItem('gemini_api_key');
+        if (savedKey) {
+            apiKeyInput.value = savedKey;
+            rememberKeyCheckbox.checked = true;
+            updateKeyStatus();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar chave salva:', error);
+    }
+}
+
+function saveApiKey(key) {
+    try {
+        localStorage.setItem('gemini_api_key', key);
+        updateKeyStatus();
+    } catch (error) {
+        console.error('Erro ao salvar chave:', error);
+        keyStatus.textContent = '⚠️ Erro ao salvar chave';
+        keyStatus.style.color = '#ff4444';
+    }
+}
+
+function clearSavedApiKey() {
+    try {
+        localStorage.removeItem('gemini_api_key');
+        updateKeyStatus();
+    } catch (error) {
+        console.error('Erro ao limpar chave:', error);
+    }
+}
+
+function updateKeyStatus() {
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey) {
+        keyStatus.textContent = '✓ Chave salva neste navegador';
+        keyStatus.style.color = '#4caf50';
+        keyStatus.style.display = 'block';
+        clearKeyBtn.style.display = 'inline-block';
+    } else {
+        keyStatus.textContent = '';
+        keyStatus.style.display = 'none';
+        clearKeyBtn.style.display = 'none';
+    }
 }
