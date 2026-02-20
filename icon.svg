@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Fundo gradiente -->
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fundo arredondado -->
+  <rect width="512" height="512" rx="110" fill="url(#grad)"/>
+  
+  <!-- Símbolo de multiplicação -->
+  <text x="256" y="360" font-size="280" font-weight="bold" text-anchor="middle" fill="white" font-family="Arial, sans-serif">×</text>
+  
+  <!-- Números decorativos -->
+  <text x="120" y="150" font-size="80" font-weight="bold" fill="rgba(255,255,255,0.3)" font-family="Arial, sans-serif">2</text>
+  <text x="380" y="150" font-size="80" font-weight="bold" fill="rgba(255,255,255,0.3)" font-family="Arial, sans-serif">5</text>
+  <text x="120" y="450" font-size="80" font-weight="bold" fill="rgba(255,255,255,0.3)" font-family="Arial, sans-serif">7</text>
+  <text x="380" y="450" font-size="80" font-weight="bold" fill="rgba(255,255,255,0.3)" font-family="Arial, sans-serif">9</text>
+</svg>
