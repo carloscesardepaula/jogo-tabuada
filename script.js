@@ -53,6 +53,16 @@ const inputMode = document.getElementById('input-mode');
 const alternativesMode = document.getElementById('alternatives-mode');
 const alternativesGrid = document.getElementById('alternatives-grid');
 
+// Elementos da tela de estudo
+const studyScreen = document.getElementById('study-screen');
+const studyBtn = document.getElementById('study-btn');
+const backFromStudyBtn = document.getElementById('back-from-study-btn');
+const showTableBtn = document.getElementById('show-table-btn');
+const playFromStudyBtn = document.getElementById('play-from-study-btn');
+const studyTableContainer = document.getElementById('study-table-container');
+const studyTableTitle = document.getElementById('study-table-title');
+const studyTableContent = document.getElementById('study-table-content');
+
 // Configuração inicial
 document.querySelectorAll('#op-soma, #op-subtracao, #op-multiplicacao, #op-divisao').forEach(checkbox => {
     checkbox.addEventListener('change', validateConfig);
@@ -98,6 +108,12 @@ document.querySelectorAll('.qty-btn').forEach(btn => {
 startBtn.addEventListener('click', startGame);
 submitBtn.addEventListener('click', submitAnswer);
 restartBtn.addEventListener('click', resetGame);
+
+// Event listeners da tela de estudo
+studyBtn.addEventListener('click', openStudyScreen);
+backFromStudyBtn.addEventListener('click', closeStudyScreen);
+showTableBtn.addEventListener('click', showStudyTable);
+playFromStudyBtn.addEventListener('click', playFromStudy);
 
 answerInput.addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
@@ -948,4 +964,90 @@ function resetGame() {
     // Voltar para tela inicial
     resultScreen.classList.remove('active');
     configScreen.classList.add('active');
+}
+
+// ===== FUNÇÕES DA TELA DE ESTUDO =====
+
+function openStudyScreen() {
+    configScreen.classList.remove('active');
+    studyScreen.classList.add('active');
+    studyTableContainer.style.display = 'none';
+}
+
+function closeStudyScreen() {
+    studyScreen.classList.remove('active');
+    configScreen.classList.add('active');
+}
+
+function showStudyTable() {
+    const operation = document.querySelector('input[name="study-operation"]:checked').value;
+    const table = parseInt(document.querySelector('input[name="study-table"]:checked').value);
+    
+    const lines = generateStudyTable(operation, table);
+    
+    // Mapear nomes das operações
+    const operationNames = {
+        'soma': 'Soma',
+        'subtracao': 'Subtração',
+        'multiplicacao': 'Multiplicação',
+        'divisao': 'Divisão'
+    };
+    
+    // Atualizar título
+    studyTableTitle.textContent = `📘 Tabuada do ${table} - ${operationNames[operation]}`;
+    
+    // Gerar HTML das linhas
+    studyTableContent.innerHTML = lines.map(line => 
+        `<div class="study-table-line">${line}</div>`
+    ).join('');
+    
+    // Mostrar container
+    studyTableContainer.style.display = 'block';
+    
+    // Scroll suave até a tabela
+    studyTableContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function generateStudyTable(operation, table) {
+    const lines = [];
+    
+    for (let i = 1; i <= 10; i++) {
+        let text;
+        
+        switch(operation) {
+            case 'multiplicacao':
+                text = `${table} × ${i} = ${table * i}`;
+                break;
+            case 'soma':
+                text = `${table} + ${i} = ${table + i}`;
+                break;
+            case 'subtracao':
+                if (i <= table) {
+                    text = `${table} - ${i} = ${table - i}`;
+                }
+                break;
+            case 'divisao':
+                text = `${table * i} ÷ ${table} = ${i}`;
+                break;
+        }
+        
+        if (text) lines.push(text);
+    }
+    
+    return lines;
+}
+
+function playFromStudy() {
+    const operation = document.querySelector('input[name="study-operation"]:checked').value;
+    const table = parseInt(document.querySelector('input[name="study-table"]:checked').value);
+    
+    // Configurar o jogo com a operação e tabuada estudadas
+    gameConfig.operations = [operation];
+    gameConfig.selectedTables = [table];
+    
+    // Fechar tela de estudo
+    studyScreen.classList.remove('active');
+    
+    // Iniciar o jogo diretamente
+    startGame();
 }
