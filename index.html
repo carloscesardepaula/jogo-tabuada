@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo de Tabuada</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Tela Inicial -->
+    <div id="config-screen" class="screen active">
+        <div class="container">
+            <h1>🎮 Jogo de Tabuada</h1>
+            
+            <div class="config-section">
+                <h2>Escolha as operações:</h2>
+                <div class="operations">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="op-soma" value="soma">
+                        <span>➕ Soma</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="op-subtracao" value="subtracao">
+                        <span>➖ Subtração</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="op-multiplicacao" value="multiplicacao">
+                        <span>✖️ Multiplicação</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="op-divisao" value="divisao">
+                        <span>➗ Divisão</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <h2>Escolha as tabuadas:</h2>
+                <div class="tables-grid">
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="1">
+                        <span>1</span>
+                    </label>
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="2">
+                        <span>2</span>
+                    </label>
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="3">
+                        <span>3</span>
+                    </label>
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="4">
+                        <span>4</span>
+                    </label>
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="5">
+                        <span>5</span>
+                    </label>
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="6">
+                        <span>6</span>
+                    </label>
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="7">
+                        <span>7</span>
+                    </label>
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="8">
+                        <span>8</span>
+                    </label>
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="9">
+                        <span>9</span>
+                    </label>
+                    <label class="table-label">
+                        <input type="checkbox" class="table-checkbox" value="10">
+                        <span>10</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="config-section">
+                <h2>Quantas perguntas?</h2>
+                <div class="question-buttons">
+                    <button class="qty-btn" data-qty="5">5</button>
+                    <button class="qty-btn" data-qty="10">10</button>
+                    <button class="qty-btn" data-qty="15">15</button>
+                    <button class="qty-btn" data-qty="20">20</button>
+                </div>
+            </div>
+
+            <div id="validation-message" class="validation-message"></div>
+
+            <button id="start-btn" class="main-btn" disabled>Iniciar Jogo</button>
+        </div>
+    </div>
+
+    <!-- Tela de Jogo -->
+    <div id="game-screen" class="screen">
+        <div class="container">
+            <div class="game-header">
+                <div class="progress">Pergunta <span id="current-q">1</span> de <span id="total-q">10</span></div>
+                <div class="timer">⏱️ <span id="timer">00:00</span></div>
+            </div>
+
+            <div class="question-box">
+                <div id="question" class="question"></div>
+                <input type="number" id="answer-input" class="answer-input" placeholder="Sua resposta">
+                <button id="submit-btn" class="main-btn">Responder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de Resultado -->
+    <div id="result-screen" class="screen">
+        <div class="container">
+            <h1>🎉 Resultado Final</h1>
+            
+            <div id="game-config-summary" class="config-summary"></div>
+            
+            <div class="result-stats">
+                <div class="stat-box">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-label">Tempo Total</div>
+                    <div class="stat-value" id="final-time">00:00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-label">Acertos</div>
+                    <div class="stat-value" id="correct-count">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-icon">❌</div>
+                    <div class="stat-label">Erros</div>
+                    <div class="stat-value" id="wrong-count">0</div>
+                </div>
+            </div>
+
+            <div class="score-box">
+                <div class="score-label">Pontuação</div>
+                <div class="score-value" id="final-score">0</div>
+            </div>
+
+            <div id="wrong-answers" class="wrong-answers"></div>
+
+            <button id="restart-btn" class="main-btn">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
