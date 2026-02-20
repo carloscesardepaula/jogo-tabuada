@@ -35,6 +35,13 @@ h1 {
     text-align: center;
     color: #667eea;
     font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.version {
+    text-align: center;
+    color: #999;
+    font-size: 0.9em;
     margin-bottom: 30px;
 }
 
@@ -136,6 +143,59 @@ h2 {
 
 .repeat-option:hover {
     background: #d0e8f0;
+}
+
+.multiple-choice-option {
+    background: #fff8e1;
+    border: 2px solid #ffa726;
+}
+
+.multiple-choice-option:hover {
+    background: #ffecb3;
+}
+
+.advanced-toggle {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: 2px dashed #ccc;
+    color: #666;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s;
+}
+
+.toggle-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: #f5f5f5;
+}
+
+.toggle-btn.active {
+    border-style: solid;
+    border-color: #667eea;
+    color: #667eea;
+    background: #f0f4ff;
+}
+
+.advanced-section {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .question-buttons {
@@ -257,6 +317,64 @@ h2 {
     outline: none;
     border-color: #764ba2;
     box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+}
+
+.alternatives-mode {
+    width: 100%;
+}
+
+.alternatives-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.alternative-btn {
+    padding: 20px;
+    font-size: 1.8em;
+    font-weight: bold;
+    background: #f5f5f5;
+    border: 3px solid #ddd;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    color: #333;
+}
+
+.alternative-btn:hover:not(:disabled) {
+    background: #e0e0e0;
+    transform: scale(1.05);
+    border-color: #667eea;
+}
+
+.alternative-btn:disabled {
+    cursor: not-allowed;
+}
+
+.alternative-btn.correct {
+    background: #4caf50;
+    color: white;
+    border-color: #2e7d32;
+    animation: pulse 0.5s;
+}
+
+.alternative-btn.wrong {
+    background: #ff4444;
+    color: white;
+    border-color: #c62828;
+    animation: shake 0.5s;
+}
+
+.alternative-btn.show-correct {
+    background: #81c784;
+    border-color: #4caf50;
+    color: white;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
 }
 
 .result-stats {
@@ -399,6 +517,14 @@ h2 {
     }
 
     .answer-input {
+        font-size: 1.5em;
+    }
+    
+    .alternatives-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .alternative-btn {
         font-size: 1.5em;
     }
 }

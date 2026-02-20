@@ -3,7 +3,8 @@ const gameConfig = {
     operations: [],
     selectedTables: [],
     totalQuestions: 10,
-    repeatOnError: true
+    repeatOnError: true,
+    multipleChoice: false
 };
 
 const gameState = {
@@ -25,15 +26,41 @@ const restartBtn = document.getElementById('restart-btn');
 const answerInput = document.getElementById('answer-input');
 const validationMessage = document.getElementById('validation-message');
 const feedbackMessage = document.getElementById('feedback-message');
+const inputMode = document.getElementById('input-mode');
+const alternativesMode = document.getElementById('alternatives-mode');
+const alternativesGrid = document.getElementById('alternatives-grid');
 
 // Configuração inicial
-document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+document.querySelectorAll('#op-soma, #op-subtracao, #op-multiplicacao, #op-divisao').forEach(checkbox => {
+    checkbox.addEventListener('change', validateConfig);
+});
+
+document.querySelectorAll('.table-checkbox').forEach(checkbox => {
     checkbox.addEventListener('change', validateConfig);
 });
 
 // Capturar mudança na opção de repetição
 document.getElementById('repeat-on-error').addEventListener('change', function() {
     gameConfig.repeatOnError = this.checked;
+});
+
+// Capturar mudança no modo múltipla escolha
+document.getElementById('multiple-choice').addEventListener('change', function() {
+    gameConfig.multipleChoice = this.checked;
+});
+
+// Toggle de configurações avançadas
+document.getElementById('toggle-advanced').addEventListener('click', function() {
+    const advancedSection = document.getElementById('advanced-config');
+    const isVisible = advancedSection.style.display !== 'none';
+    
+    if (isVisible) {
+        advancedSection.style.display = 'none';
+        this.classList.remove('active');
+    } else {
+        advancedSection.style.display = 'block';
+        this.classList.add('active');
+    }
 });
 
 document.querySelectorAll('.qty-btn').forEach(btn => {
@@ -56,7 +83,7 @@ answerInput.addEventListener('keypress', function(e) {
 });
 
 function validateConfig() {
-    const selectedOps = Array.from(document.querySelectorAll('input[type="checkbox"]:not(.table-checkbox):not(#repeat-on-error):checked'))
+    const selectedOps = Array.from(document.querySelectorAll('#op-soma:checked, #op-subtracao:checked, #op-multiplicacao:checked, #op-divisao:checked'))
         .map(cb => cb.value);
     
     const selectedTables = Array.from(document.querySelectorAll('.table-checkbox:checked'))
@@ -64,6 +91,8 @@ function validateConfig() {
     
     gameConfig.operations = selectedOps;
     gameConfig.selectedTables = selectedTables;
+    
+    console.log('Validando config - Operações:', gameConfig.operations);
     
     // Validação
     let message = '';
@@ -180,6 +209,7 @@ function generateQuestion() {
         operation,
         correctAnswer,
         questionText,
+        alternatives: [],
         userAnswer: null,
         isCorrect: false
     };
@@ -216,17 +246,177 @@ function showQuestion() {
     document.getElementById('current-q').textContent = gameState.currentQuestionIndex + 1;
     document.getElementById('total-q').textContent = gameConfig.totalQuestions;
     
-    // Limpar e focar no input
-    answerInput.value = '';
-    answerInput.disabled = false;
-    answerInput.focus();
-    
-    // Reabilitar botão
-    submitBtn.disabled = false;
-    
     // Limpar mensagem de feedback
     feedbackMessage.textContent = '';
     feedbackMessage.className = 'feedback-message';
+    
+    // Mostrar modo apropriado
+    if (gameConfig.multipleChoice) {
+        // Modo múltipla escolha
+        inputMode.style.display = 'none';
+        alternativesMode.style.display = 'block';
+        
+        // Gerar alternativas se ainda não existirem
+        if (question.alternatives.length === 0) {
+            question.alternatives = generateAlternatives(question.correctAnswer);
+        }
+        
+        // Exibir alternativas
+        showAlternatives(question);
+    } else {
+        // Modo digitação
+        inputMode.style.display = 'block';
+        alternativesMode.style.display = 'none';
+        
+        answerInput.value = '';
+        answerInput.disabled = false;
+        answerInput.focus();
+        submitBtn.disabled = false;
+    }
+}
+
+function generateAlternatives(correctAnswer) {
+    const alternatives = new Set();
+    alternatives.add(correctAnswer);
+    
+    // Gerar 5 alternativas incorretas
+    while (alternatives.size < 6) {
+        let wrongAnswer;
+        const strategy = Math.random();
+        
+        if (strategy < 0.4) {
+            // Variação próxima (±1 a ±5)
+            const variation = Math.floor(Math.random() * 5) + 1;
+            wrongAnswer = correctAnswer + (Math.random() < 0.5 ? variation : -variation);
+        } else if (strategy < 0.7) {
+            // Múltiplos ou divisores próximos
+            const factor = Math.floor(Math.random() * 3) + 2;
+            wrongAnswer = Math.random() < 0.5 ? correctAnswer * factor : Math.floor(correctAnswer / factor);
+        } else {
+            // Valor aleatório na faixa plausível
+            const min = Math.max(1, correctAnswer - 20);
+            const max = correctAnswer + 20;
+            wrongAnswer = Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        // Apenas adicionar se for positivo e diferente da correta
+        if (wrongAnswer > 0 && wrongAnswer !== correctAnswer) {
+            alternatives.add(wrongAnswer);
+        }
+    }
+    
+    // Converter para array e embaralhar
+    const alternativesArray = Array.from(alternatives);
+    return shuffleArray(alternativesArray);
+}
+
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+function showAlternatives(question) {
+    alternativesGrid.innerHTML = '';
+    
+    question.alternatives.forEach(alt => {
+        const btn = document.createElement('button');
+        btn.className = 'alternative-btn';
+        btn.textContent = alt;
+        btn.dataset.value = alt; // Armazenar valor como data attribute
+        btn.onclick = () => selectAlternative(alt, question.correctAnswer);
+        alternativesGrid.appendChild(btn);
+    });
+}
+
+function selectAlternative(selectedAnswer, correctAnswer) {
+    // Garantir que ambos sejam números para comparação
+    const selectedNum = Number(selectedAnswer);
+    const correctNum = Number(correctAnswer);
+    const isCorrect = selectedNum === correctNum;
+    
+    console.log('Selecionado:', selectedNum, 'Correto:', correctNum, 'É correto?', isCorrect);
+    
+    const buttons = alternativesGrid.querySelectorAll('.alternative-btn');
+    
+    // Desabilitar todos os botões
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        const btnValue = Number(btn.textContent);
+        
+        if (btnValue === selectedNum) {
+            if (isCorrect) {
+                btn.classList.add('correct');
+            } else {
+                btn.classList.add('wrong');
+            }
+        }
+    });
+    
+    // Processar resposta
+    processAnswer(selectedNum, isCorrect);
+}
+
+function processAnswer(userAnswer, isCorrect) {
+    const question = gameState.questions[gameState.currentQuestionIndex];
+    
+    if (isCorrect) {
+        // Resposta correta
+        question.userAnswer = userAnswer;
+        question.isCorrect = true;
+        gameState.answers.push({...question});
+        
+        feedbackMessage.textContent = '✅ Correto!';
+        feedbackMessage.className = 'feedback-message success';
+        
+        // Avançar para próxima pergunta
+        setTimeout(() => {
+            gameState.currentQuestionIndex++;
+            
+            if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
+                showQuestion();
+            } else {
+                endGame();
+            }
+        }, 800);
+        
+    } else {
+        // Resposta incorreta
+        gameState.totalErrors++;
+        
+        const errorRecord = {...question};
+        errorRecord.userAnswer = userAnswer;
+        errorRecord.isCorrect = false;
+        gameState.answers.push(errorRecord);
+        
+        if (gameConfig.repeatOnError) {
+            feedbackMessage.textContent = '❌ Resposta incorreta! Tente novamente.';
+            feedbackMessage.className = 'feedback-message error';
+            
+            // Gerar novas alternativas para repetição
+            setTimeout(() => {
+                question.alternatives = generateAlternatives(question.correctAnswer);
+                showQuestion();
+            }, 1500);
+            
+        } else {
+            feedbackMessage.textContent = '❌ Resposta incorreta!';
+            feedbackMessage.className = 'feedback-message error';
+            
+            setTimeout(() => {
+                gameState.currentQuestionIndex++;
+                
+                if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
+                    showQuestion();
+                } else {
+                    endGame();
+                }
+            }, 1500);
+        }
+    }
 }
 
 function submitAnswer() {
@@ -329,10 +519,14 @@ function endGame() {
 function showResults() {
     const totalTime = gameState.endTime - gameState.startTime;
     
-    // Calcular acertos únicos (baseado nas perguntas planejadas)
-    const correctAnswers = gameState.currentQuestionIndex;
-    const wrongAnswers = gameState.totalErrors;
-    const score = Math.round((correctAnswers / gameConfig.totalQuestions) * 100);
+    // Contar erros e acertos
+    const wrongAnswers = gameState.answers.filter(a => !a.isCorrect).length;
+    const correctAnswers = gameConfig.totalQuestions; // Perguntas completadas
+    
+    // Pontuação: penaliza pelos erros cometidos
+    // Se completou todas as perguntas mas teve erros, a pontuação diminui
+    const totalAttempts = gameState.answers.length; // Total de tentativas (acertos + erros)
+    const score = Math.round((correctAnswers / totalAttempts) * 100);
     
     // Mostrar configuração do jogo
     showGameConfig();
@@ -386,6 +580,7 @@ function showGameConfig() {
         .join(', ');
     
     const repeatMode = gameConfig.repeatOnError ? 'Sim' : 'Não';
+    const choiceMode = gameConfig.multipleChoice ? 'Múltipla Escolha' : 'Digitação';
     
     configDiv.innerHTML = `
         <h3>📋 Configuração do Jogo</h3>
@@ -400,6 +595,9 @@ function showGameConfig() {
         </div>
         <div class="config-item">
             <strong>Total de perguntas:</strong> ${gameConfig.totalQuestions}
+        </div>
+        <div class="config-item">
+            <strong>Modo de resposta:</strong> ${choiceMode}
         </div>
         <div class="config-item">
             <strong>Repetir ao errar:</strong> ${repeatMode}

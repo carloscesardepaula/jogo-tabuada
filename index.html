@@ -11,6 +11,7 @@
     <div id="config-screen" class="screen active">
         <div class="container">
             <h1>🎮 Jogo de Tabuada</h1>
+            <div class="version">v1.0.0</div>
             
             <div class="config-section">
                 <h2>Escolha as operações:</h2>
@@ -90,11 +91,21 @@
                 </div>
             </div>
 
-            <div class="config-section">
+            <div class="advanced-toggle">
+                <button id="toggle-advanced" class="toggle-btn">⚙️ Configurações Avançadas</button>
+            </div>
+
+            <div id="advanced-config" class="config-section advanced-section" style="display: none;">
                 <h2>🔁 Repetição em caso de erro</h2>
                 <label class="checkbox-label repeat-option">
                     <input type="checkbox" id="repeat-on-error" checked>
                     <span>Repetir pergunta quando errar</span>
+                </label>
+                
+                <h2 style="margin-top: 20px;">🔘 Modo de Resposta</h2>
+                <label class="checkbox-label multiple-choice-option">
+                    <input type="checkbox" id="multiple-choice">
+                    <span>Ativar modo múltipla escolha</span>
                 </label>
             </div>
 
@@ -114,8 +125,17 @@
             <div class="question-box">
                 <div id="feedback-message" class="feedback-message"></div>
                 <div id="question" class="question"></div>
-                <input type="number" id="answer-input" class="answer-input" placeholder="Sua resposta">
-                <button id="submit-btn" class="main-btn">Responder</button>
+                
+                <!-- Modo digitação -->
+                <div id="input-mode" class="input-mode">
+                    <input type="number" id="answer-input" class="answer-input" placeholder="Sua resposta">
+                    <button id="submit-btn" class="main-btn">Responder</button>
+                </div>
+                
+                <!-- Modo múltipla escolha -->
+                <div id="alternatives-mode" class="alternatives-mode" style="display: none;">
+                    <div id="alternatives-grid" class="alternatives-grid"></div>
+                </div>
             </div>
         </div>
     </div>
