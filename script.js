@@ -268,12 +268,13 @@ function showQuestion() {
         inputMode.style.display = 'block';
         alternativesMode.style.display = 'none';
         
-        // Não limpar o valor - apenas selecionar tudo para facilitar substituição
+        // Limpar o campo
+        answerInput.value = '';
         answerInput.disabled = false;
         submitBtn.disabled = false;
         
-        // Selecionar todo o texto (facilita digitação da próxima resposta)
-        answerInput.select();
+        // Manter foco
+        answerInput.focus();
     }
 }
 
@@ -448,8 +449,8 @@ function submitAnswer() {
         gameState.currentQuestionIndex++;
         
         if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
-            // Selecionar todo o texto para facilitar substituição
-            answerInput.select();
+            // Limpar campo e mostrar próxima pergunta
+            answerInput.value = '';
             showQuestion();
         } else {
             endGame();
@@ -470,8 +471,9 @@ function submitAnswer() {
             feedbackMessage.textContent = '❌ Resposta incorreta! Tente novamente.';
             feedbackMessage.className = 'feedback-message error';
             
-            // Selecionar todo o texto para facilitar substituição
-            answerInput.select();
+            // Limpar campo e manter foco
+            answerInput.value = '';
+            answerInput.focus();
             submitBtn.disabled = false;
             
         } else {
@@ -483,7 +485,7 @@ function submitAnswer() {
             gameState.currentQuestionIndex++;
             
             if (gameState.currentQuestionIndex < gameConfig.totalQuestions) {
-                answerInput.select();
+                answerInput.value = '';
                 showQuestion();
             } else {
                 endGame();
