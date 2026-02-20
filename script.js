@@ -268,14 +268,17 @@ function showQuestion() {
         inputMode.style.display = 'block';
         alternativesMode.style.display = 'none';
         
+        // Limpar e preparar input
         answerInput.value = '';
         answerInput.disabled = false;
         submitBtn.disabled = false;
         
-        // Garantir foco no campo com delay para iOS
-        setTimeout(() => {
+        // Forçar foco imediatamente e com múltiplas tentativas para iOS
+        answerInput.focus();
+        requestAnimationFrame(() => {
             answerInput.focus();
-        }, 100);
+            answerInput.click();
+        });
     }
 }
 
@@ -430,9 +433,8 @@ function submitAnswer() {
         return;
     }
     
-    // Desabilitar botão e input para evitar múltiplos cliques
+    // Desabilitar botão temporariamente para evitar múltiplos cliques
     submitBtn.disabled = true;
-    answerInput.disabled = true;
     
     const question = gameState.questions[gameState.currentQuestionIndex];
     const isCorrect = userAnswer === question.correctAnswer;
@@ -443,9 +445,12 @@ function submitAnswer() {
         question.isCorrect = true;
         gameState.answers.push({...question});
         
-        // Feedback visual de sucesso (opcional, rápido)
+        // Feedback visual de sucesso
         feedbackMessage.textContent = '✅ Correto!';
         feedbackMessage.className = 'feedback-message success';
+        
+        // Limpar campo mas manter foco
+        answerInput.value = '';
         
         // Avançar para próxima pergunta após breve delay
         setTimeout(() => {
@@ -475,19 +480,18 @@ function submitAnswer() {
             
             // Limpar campo de resposta e reabilitar
             answerInput.value = '';
-            answerInput.disabled = false;
             submitBtn.disabled = false;
             
-            // Manter foco no campo
-            setTimeout(() => {
-                answerInput.focus();
-            }, 100);
+            // Manter foco
+            answerInput.focus();
             
-            // Não incrementa currentQuestionIndex - pergunta repete
         } else {
             // Modo desafio: mostrar erro e avançar
             feedbackMessage.textContent = '❌ Resposta incorreta!';
             feedbackMessage.className = 'feedback-message error';
+            
+            // Limpar campo mas manter foco
+            answerInput.value = '';
             
             setTimeout(() => {
                 gameState.currentQuestionIndex++;
