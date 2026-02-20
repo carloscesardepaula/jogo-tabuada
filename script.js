@@ -279,14 +279,14 @@ function generateAlternatives(correctAnswer) {
     const alternatives = new Set();
     alternatives.add(correctAnswer);
     
-    // Gerar 5 alternativas incorretas
-    while (alternatives.size < 6) {
+    // Gerar 11 alternativas incorretas (total de 12)
+    while (alternatives.size < 12) {
         let wrongAnswer;
         const strategy = Math.random();
         
         if (strategy < 0.4) {
-            // Variação próxima (±1 a ±5)
-            const variation = Math.floor(Math.random() * 5) + 1;
+            // Variação próxima (±1 a ±10)
+            const variation = Math.floor(Math.random() * 10) + 1;
             wrongAnswer = correctAnswer + (Math.random() < 0.5 ? variation : -variation);
         } else if (strategy < 0.7) {
             // Múltiplos ou divisores próximos
@@ -294,8 +294,8 @@ function generateAlternatives(correctAnswer) {
             wrongAnswer = Math.random() < 0.5 ? correctAnswer * factor : Math.floor(correctAnswer / factor);
         } else {
             // Valor aleatório na faixa plausível
-            const min = Math.max(1, correctAnswer - 20);
-            const max = correctAnswer + 20;
+            const min = Math.max(1, correctAnswer - 30);
+            const max = correctAnswer + 30;
             wrongAnswer = Math.floor(Math.random() * (max - min + 1)) + min;
         }
         
