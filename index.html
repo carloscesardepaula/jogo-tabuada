@@ -84,10 +84,18 @@
                 <h2>Quantas perguntas?</h2>
                 <div class="question-buttons">
                     <button class="qty-btn" data-qty="5">5</button>
-                    <button class="qty-btn" data-qty="10">10</button>
+                    <button class="qty-btn selected" data-qty="10">10</button>
                     <button class="qty-btn" data-qty="15">15</button>
                     <button class="qty-btn" data-qty="20">20</button>
                 </div>
+            </div>
+
+            <div class="config-section">
+                <h2>🔁 Repetição em caso de erro</h2>
+                <label class="checkbox-label repeat-option">
+                    <input type="checkbox" id="repeat-on-error" checked>
+                    <span>Repetir pergunta quando errar</span>
+                </label>
             </div>
 
             <div id="validation-message" class="validation-message"></div>
@@ -101,10 +109,10 @@
         <div class="container">
             <div class="game-header">
                 <div class="progress">Pergunta <span id="current-q">1</span> de <span id="total-q">10</span></div>
-                <div class="timer">⏱️ <span id="timer">00:00</span></div>
             </div>
 
             <div class="question-box">
+                <div id="feedback-message" class="feedback-message"></div>
                 <div id="question" class="question"></div>
                 <input type="number" id="answer-input" class="answer-input" placeholder="Sua resposta">
                 <button id="submit-btn" class="main-btn">Responder</button>

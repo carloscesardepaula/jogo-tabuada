@@ -129,6 +129,15 @@ h2 {
     min-height: 25px;
 }
 
+.repeat-option {
+    background: #e8f4f8;
+    border: 2px solid #667eea;
+}
+
+.repeat-option:hover {
+    background: #d0e8f0;
+}
+
 .question-buttons {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -184,7 +193,7 @@ h2 {
 
 .game-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-bottom: 30px;
     font-size: 1.3em;
@@ -195,12 +204,33 @@ h2 {
     color: #667eea;
 }
 
-.timer {
-    color: #764ba2;
-}
-
 .question-box {
     text-align: center;
+}
+
+.feedback-message {
+    min-height: 40px;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feedback-message.error {
+    color: #ff4444;
+    animation: shake 0.5s;
+}
+
+.feedback-message.success {
+    color: #4caf50;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
 }
 
 .question {
